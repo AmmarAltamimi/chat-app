@@ -9,19 +9,28 @@ const MessageInput = () => {
   const fileInputRef = useRef(null);
   const { sendMessage } = useChatStore();
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
-      return;
-    }
+ const MAX_IMAGE_SIZE = 100 * 1024; // 100 KB
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-    reader.readAsDataURL(file);
-  };
+const handleImageChange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    toast.error("Please select an image file");
+    e.target.value = "";
+    return;
+  }
+
+  if (file.size > MAX_IMAGE_SIZE) {
+    toast.error("Image is too large. Please choose a smaller image.");
+    e.target.value = ""; // إزالة الاختيار لمنع الإضافة
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onloadend = () => setImagePreview(reader.result);
+  reader.readAsDataURL(file);
+};
 
   const removeImage = () => {
     setImagePreview(null);
